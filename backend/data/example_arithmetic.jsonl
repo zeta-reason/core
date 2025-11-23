@@ -1,0 +1,3 @@
+{"id": "q1", "input": "What is 2 + 2?", "target": "4"}
+{"id": "q2", "input": "Compute 5 * 3.", "target": "15"}
+{"id": "q3", "input": "What is 12 - 7?", "target": "5"}
