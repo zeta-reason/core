@@ -11,6 +11,14 @@ import {
   deletePreset,
   type ModelPreset,
 } from '../utils/modelPresets';
+import {
+  listProviders,
+  listModels,
+  getProviderInfo,
+  getModelInfo,
+  isProviderImplemented,
+  type ProviderId,
+} from '../config/modelRegistry';
 
 interface ModelSelectorProps {
   onModelsChange: (models: ModelConfig[]) => void;
@@ -60,7 +68,29 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelsChange }) 
   const updateModel = (index: number, field: keyof ModelConfig, value: string | number | boolean) => {
     const updated = models.map((model, i) => {
       if (i === index) {
-        return { ...model, [field]: value };
+        const updatedModel = { ...model, [field]: value };
+
+        // When provider changes, update to the first available model for that provider
+        if (field === 'provider') {
+          const providerModels = listModels(value as ProviderId);
+          if (providerModels.length > 0) {
+            const firstModel = providerModels[0];
+            updatedModel.model_id = firstModel.modelId;
+            updatedModel.max_tokens = firstModel.defaultMaxTokens || 1000;
+            updatedModel.temperature = firstModel.defaultTemperature || 0.7;
+          }
+        }
+
+        // When model_id changes, update defaults from registry
+        if (field === 'model_id') {
+          const modelInfo = getModelInfo(model.provider as ProviderId, value as string);
+          if (modelInfo) {
+            updatedModel.max_tokens = modelInfo.defaultMaxTokens || model.max_tokens;
+            updatedModel.temperature = modelInfo.defaultTemperature || model.temperature;
+          }
+        }
+
+        return updatedModel;
       }
       return model;
     });
@@ -243,22 +273,39 @@ export const ModelSelector: React.FC<ModelSelectorProps> = ({ onModelsChange }) 
                 onChange={(e) => updateModel(index, 'provider', e.target.value)}
                 style={{ width: '100%', padding: '4px' }}
               >
-                <option value="openai">OpenAI</option>
+                {listProviders()
+                  .filter((providerId) => isProviderImplemented(providerId) || providerId === 'dummy')
+                  .map((providerId) => {
+                    const providerInfo = getProviderInfo(providerId);
+                    return (
+                      <option key={providerId} value={providerId}>
+                        {providerInfo.displayName}
+                      </option>
+                    );
+                  })}
                 <option value="dummy">Dummy (Testing)</option>
               </select>
             </div>
 
             <div>
               <label style={{ display: 'block', fontSize: '12px', marginBottom: '4px' }}>
-                Model ID:
+                Model:
               </label>
-              <input
-                type="text"
+              <select
                 value={model.model_id}
                 onChange={(e) => updateModel(index, 'model_id', e.target.value)}
                 style={{ width: '100%', padding: '4px' }}
-                placeholder="e.g., gpt-4o-mini"
-              />
+              >
+                {model.provider === 'dummy' ? (
+                  <option value="dummy-model">Dummy Model</option>
+                ) : (
+                  listModels(model.provider as ProviderId).map((modelInfo) => (
+                    <option key={modelInfo.modelId} value={modelInfo.modelId}>
+                      {modelInfo.displayName}
+                    </option>
+                  ))
+                )}
+              </select>
             </div>
 
             <div>

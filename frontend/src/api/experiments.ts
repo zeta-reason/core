@@ -10,7 +10,8 @@ import type {
   StorageStats,
 } from '../types/experiments';
 
-const API_BASE = 'http://localhost:8000/api/experiments';
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000';
+const API_BASE = `${API_BASE_URL}/api/experiments`;
 
 /**
  * Save a new experiment

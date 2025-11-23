@@ -1,7 +1,8 @@
 """FastAPI application for Zeta Reason."""
 
 import logging
-from fastapi import FastAPI, HTTPException
+import asyncio
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
@@ -15,7 +16,7 @@ from zeta_reason.schemas import (
     HealthResponse,
     ErrorResponse,
 )
-from zeta_reason.models import DummyModelRunner, OpenAIModelRunner
+from zeta_reason.models import DummyModelRunner, OpenAIModelRunner, ProviderModelRunner
 from zeta_reason.evaluator import evaluate_model_on_dataset, compare_models
 from zeta_reason.exceptions import ProviderError
 from zeta_reason.storage import ExperimentStorage
@@ -24,6 +25,8 @@ from zeta_reason.storage.experiments import (
     ExperimentMetadata,
     ExperimentData,
 )
+from zeta_reason.progress import progress_tracker
+from zeta_reason.providers.registry import list_providers
 
 logger = logging.getLogger(__name__)
 
@@ -80,53 +83,77 @@ async def evaluate(request: EvaluateRequest) -> EvaluateResponse:
                 content=error_response.model_dump()
             )
 
+        # Validate provider is supported before building runner
+        supported_providers = [p.value for p in list_providers()] + ["dummy"]
+        if request.model_configuration.provider not in supported_providers:
+            error_response = ErrorResponse(
+                error="Unsupported provider",
+                details={
+                    "provider": request.model_configuration.provider,
+                    "supported_providers": supported_providers,
+                }
+            )
+            return JSONResponse(status_code=400, content=error_response.model_dump())
+
         # Create model runner based on provider
         if request.model_configuration.provider == "dummy":
+            # Keep dummy runner for testing
             runner = DummyModelRunner(
                 model_id=request.model_configuration.model_id,
                 temperature=request.model_configuration.temperature,
                 max_tokens=request.model_configuration.max_tokens,
                 use_cot=request.model_configuration.use_cot,
             )
-        elif request.model_configuration.provider == "openai":
+        else:
+            # Use the new provider system for all real providers (openai, google, cohere, grok)
             try:
-                runner = OpenAIModelRunner(
+                runner = ProviderModelRunner(
+                    provider=request.model_configuration.provider,
                     model_id=request.model_configuration.model_id,
                     temperature=request.model_configuration.temperature,
                     max_tokens=request.model_configuration.max_tokens,
                     use_cot=request.model_configuration.use_cot,
+                    api_key=request.model_configuration.api_key,
                 )
             except ValueError as e:
-                # Missing API key
+                # Provider or model not found in registry, or missing API key
                 error_response = ErrorResponse(
                     error=str(e),
-                    details={"provider": "openai"}
+                    details={"provider": request.model_configuration.provider}
                 )
                 return JSONResponse(
                     status_code=400,
                     content=error_response.model_dump()
                 )
-        else:
-            error_response = ErrorResponse(
-                error="Unsupported provider",
-                details={
-                    "provider": request.model_configuration.provider,
-                    "supported_providers": ["dummy", "openai"]
-                }
-            )
-            return JSONResponse(
-                status_code=400,
-                content=error_response.model_dump()
+
+        # Create progress tracking run (use client-supplied run_id if provided)
+        run_id = progress_tracker.create_run(total_tasks=len(request.tasks), run_id=request.run_id)
+        logger.info(f"Created evaluation run: {run_id}")
+
+        # Get progress callback
+        progress_callback = progress_tracker.get_progress_callback(run_id)
+
+        try:
+            # Run evaluation (await the async function)
+            result = await evaluate_model_on_dataset(
+                model_runner=runner,
+                tasks=request.tasks,
+                model_config=request.model_configuration,
+                progress_callback=progress_callback,
             )
 
-        # Run evaluation (await the async function)
-        result = await evaluate_model_on_dataset(
-            model_runner=runner,
-            tasks=request.tasks,
-            model_config=request.model_configuration,
-        )
+            # Mark run as complete
+            await progress_tracker.complete_run(run_id, "Evaluation completed successfully")
 
-        return EvaluateResponse(result=result)
+            # Schedule cleanup after 60 seconds
+            asyncio.create_task(_cleanup_run_later(run_id, 60))
+
+            return EvaluateResponse(result=result, run_id=run_id)
+
+        except Exception as e:
+            # Mark run as failed
+            await progress_tracker.error_run(run_id, str(e))
+            raise
 
     except ProviderError as e:
         # Provider-specific errors (OpenAI API errors, etc.)
@@ -134,11 +161,10 @@ async def evaluate(request: EvaluateRequest) -> EvaluateResponse:
         error_dict = e.to_dict()
 
         # Map provider status codes to HTTP status codes
-        # 401, 429 -> 502 (bad gateway - upstream error)
-        # 503 -> 503 (service unavailable)
-        # default -> 502
         status_code = 502
-        if e.status_code == 503:
+        if e.status_code is not None:
+            status_code = e.status_code
+        elif e.status_code == 503:
             status_code = 503
         elif e.status_code == 429:
             status_code = 429
@@ -215,8 +241,21 @@ async def compare(request: CompareRequest) -> CompareResponse:
 
         # Create model runners for each config
         runners = []
+        supported_providers = [p.value for p in list_providers()] + ["dummy"]
         for i, model_config in enumerate(request.model_configurations):
+            if model_config.provider not in supported_providers:
+                error_response = ErrorResponse(
+                    error="Unsupported provider",
+                    details={
+                        "provider": model_config.provider,
+                        "model_index": i,
+                        "supported_providers": supported_providers,
+                    }
+                )
+                return JSONResponse(status_code=400, content=error_response.model_dump())
+
             if model_config.provider == "dummy":
+                # Keep dummy runner for testing
                 runner = DummyModelRunner(
                     model_id=model_config.model_id,
                     temperature=model_config.temperature,
@@ -224,21 +263,24 @@ async def compare(request: CompareRequest) -> CompareResponse:
                     use_cot=model_config.use_cot,
                 )
                 runners.append(runner)
-            elif model_config.provider == "openai":
+            else:
+                # Use the new provider system for all real providers
                 try:
-                    runner = OpenAIModelRunner(
+                    runner = ProviderModelRunner(
+                        provider=model_config.provider,
                         model_id=model_config.model_id,
                         temperature=model_config.temperature,
                         max_tokens=model_config.max_tokens,
                         use_cot=model_config.use_cot,
+                        api_key=model_config.api_key,
                     )
                     runners.append(runner)
                 except ValueError as e:
-                    # Missing API key
+                    # Provider or model not found in registry, or missing API key
                     error_response = ErrorResponse(
                         error=str(e),
                         details={
-                            "provider": "openai",
+                            "provider": model_config.provider,
                             "model_index": i,
                             "model_id": model_config.model_id
                         }
@@ -247,29 +289,36 @@ async def compare(request: CompareRequest) -> CompareResponse:
                         status_code=400,
                         content=error_response.model_dump()
                     )
-            else:
-                error_response = ErrorResponse(
-                    error="Unsupported provider",
-                    details={
-                        "provider": model_config.provider,
-                        "supported_providers": ["dummy", "openai"],
-                        "model_index": i,
-                        "model_id": model_config.model_id
-                    }
-                )
-                return JSONResponse(
-                    status_code=400,
-                    content=error_response.model_dump()
-                )
 
-        # Run comparison (await the async function)
-        results = await compare_models(
-            model_runners=runners,
-            tasks=request.tasks,
-            model_configs=request.model_configurations,
-        )
+        # Create progress tracking run (total tasks = models * tasks per model)
+        total_tasks = len(request.model_configurations) * len(request.tasks)
+        run_id = progress_tracker.create_run(total_tasks=total_tasks, run_id=request.run_id)
+        logger.info(f"Created comparison run: {run_id}")
 
-        return CompareResponse(results=results)
+        # Get progress callback
+        progress_callback = progress_tracker.get_progress_callback(run_id)
+
+        try:
+            # Run comparison (await the async function)
+            results = await compare_models(
+                model_runners=runners,
+                tasks=request.tasks,
+                model_configs=request.model_configurations,
+                progress_callback=progress_callback,
+            )
+
+            # Mark run as complete
+            await progress_tracker.complete_run(run_id, "Comparison completed successfully")
+
+            # Schedule cleanup after 60 seconds
+            asyncio.create_task(_cleanup_run_later(run_id, 60))
+
+            return CompareResponse(results=results, run_id=run_id)
+
+        except Exception as e:
+            # Mark run as failed
+            await progress_tracker.error_run(run_id, str(e))
+            raise
 
     except ProviderError as e:
         # Provider-specific errors (OpenAI API errors, etc.)
@@ -278,7 +327,9 @@ async def compare(request: CompareRequest) -> CompareResponse:
 
         # Map provider status codes to HTTP status codes
         status_code = 502
-        if e.status_code == 503:
+        if e.status_code is not None:
+            status_code = e.status_code
+        elif e.status_code == 503:
             status_code = 503
         elif e.status_code == 429:
             status_code = 429
@@ -475,6 +526,91 @@ async def get_storage_stats() -> dict:
             status_code=500,
             content=error_response.model_dump()
         )
+
+
+# ============================================================================
+# Progress Tracking Endpoints
+# ============================================================================
+
+
+@app.websocket("/ws/progress")
+async def progress_websocket(websocket: WebSocket, run_id: str = Query(...)):
+    """
+    WebSocket endpoint for real-time progress updates.
+
+    Args:
+        websocket: WebSocket connection
+        run_id: Evaluation run ID to track
+
+    Usage:
+        Connect to ws://localhost:8000/ws/progress?run_id=<run_id>
+        to receive progress updates for a running evaluation.
+    """
+    await websocket.accept()
+    logger.info(f"WebSocket connected for run_id: {run_id}")
+
+    try:
+        # Register this WebSocket for progress updates
+        await progress_tracker.register_websocket(run_id, websocket)
+
+        # Keep connection alive and listen for client messages
+        while True:
+            try:
+                # Wait for client messages (ping/pong to keep alive)
+                data = await websocket.receive_text()
+                logger.debug(f"Received message from client: {data}")
+            except WebSocketDisconnect:
+                logger.info(f"WebSocket disconnected for run_id: {run_id}")
+                break
+            except Exception as e:
+                logger.error(f"Error in WebSocket loop: {e}")
+                break
+
+    finally:
+        # Unregister WebSocket on disconnect
+        await progress_tracker.unregister_websocket(run_id, websocket)
+
+
+@app.get("/api/progress/{run_id}", response_model=dict)
+async def get_progress(run_id: str) -> dict:
+    """
+    Get progress status for a run (polling fallback).
+
+    Use this endpoint for clients that don't support WebSockets.
+
+    Args:
+        run_id: Evaluation run ID
+
+    Returns:
+        Progress update dictionary or 404 if run not found
+    """
+    progress = progress_tracker.get_progress(run_id)
+
+    if progress is None:
+        return JSONResponse(
+            status_code=404,
+            content={"error": "Run not found", "run_id": run_id}
+        )
+
+    return progress.to_dict()
+
+
+# ============================================================================
+# Helper Functions
+# ============================================================================
+
+
+async def _cleanup_run_later(run_id: str, delay_seconds: int):
+    """
+    Clean up progress tracking resources after a delay.
+
+    Args:
+        run_id: Run ID to clean up
+        delay_seconds: Delay in seconds before cleanup
+    """
+    await asyncio.sleep(delay_seconds)
+    progress_tracker.cleanup_run(run_id)
+    logger.info(f"Cleaned up progress tracking for run_id: {run_id}")
 
 
 if __name__ == "__main__":

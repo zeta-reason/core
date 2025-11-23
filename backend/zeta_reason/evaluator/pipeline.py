@@ -5,7 +5,7 @@ import logging
 import re
 import time
 from collections import Counter
-from typing import List
+from typing import List, Optional, Callable
 
 from zeta_reason.models.base import BaseModelRunner
 from zeta_reason.schemas import (
@@ -34,6 +34,7 @@ async def evaluate_model_on_dataset(
     model_runner: BaseModelRunner,
     tasks: List[Task],
     model_config: ModelConfig | None = None,
+    progress_callback: Optional[Callable[[int, int], None]] = None,
 ) -> EvaluationResult:
     """
     Evaluate a single model on a dataset of tasks.
@@ -45,6 +46,7 @@ async def evaluate_model_on_dataset(
         model_runner: The model runner instance to use
         tasks: List of tasks to evaluate
         model_config: Optional model configuration (if None, creates from runner params)
+        progress_callback: Optional callback(completed_tasks, total_tasks) for progress updates
 
     Returns:
         EvaluationResult containing metrics and per-task results
@@ -71,10 +73,11 @@ async def evaluate_model_on_dataset(
     )
 
     task_results = []
+    total_tasks = len(tasks)
 
     # Run model on each task
     for i, task in enumerate(tasks, 1):
-        logger.debug(f"Evaluating task {i}/{len(tasks)}: {task.id}")
+        logger.debug(f"Evaluating task {i}/{total_tasks}: {task.id}")
 
         # Format prompt and generate response
         # Measure latency
@@ -119,10 +122,9 @@ async def evaluate_model_on_dataset(
             self_correcting = any(keyword in cot_lower for keyword in correction_keywords)
 
         # Extract token usage from model_output if available
-        # (Currently ModelOutput doesn't include usage, but we prepare for future)
-        prompt_tokens = None
-        completion_tokens = None
-        total_tokens = None
+        prompt_tokens = model_output.prompt_tokens
+        completion_tokens = model_output.completion_tokens
+        total_tokens = model_output.total_tokens
 
         # Store task result with all new fields
         task_results.append(
@@ -144,6 +146,13 @@ async def evaluate_model_on_dataset(
                 latency_ms=latency_ms,
             )
         )
+
+        # Report progress after each task
+        if progress_callback is not None:
+            try:
+                progress_callback(i, total_tasks)
+            except Exception as e:
+                logger.warning(f"Progress callback failed: {e}")
 
     logger.info(f"Completed {len(tasks)} task evaluations, computing metrics...")
 
@@ -223,6 +232,7 @@ async def compare_models(
     model_runners: List[BaseModelRunner],
     tasks: List[Task],
     model_configs: List[ModelConfig],
+    progress_callback: Optional[Callable[[int, int], None]] = None,
 ) -> List[EvaluationResult]:
     """
     Compare multiple models on the same dataset.
@@ -233,6 +243,7 @@ async def compare_models(
         model_runners: List of model runner instances
         tasks: List of tasks to evaluate
         model_configs: List of model configurations (matching model_runners)
+        progress_callback: Optional callback(completed_tasks, total_tasks) for overall progress
 
     Returns:
         List of EvaluationResult, one per model
@@ -251,11 +262,27 @@ async def compare_models(
 
     logger.info(f"Starting comparison of {len(model_runners)} models on {len(tasks)} tasks")
 
+    # Calculate total tasks across all models for progress tracking
+    total_tasks = len(model_runners) * len(tasks)
+    completed_tasks = 0
+
+    # Wrapper to track progress across all models
+    def model_progress_callback(completed_in_model: int, total_in_model: int):
+        nonlocal completed_tasks
+        # Update global progress based on current model progress
+        global_completed = (completed_tasks // len(tasks)) * len(tasks) + completed_in_model
+        if progress_callback is not None:
+            try:
+                progress_callback(global_completed, total_tasks)
+            except Exception as e:
+                logger.warning(f"Progress callback failed: {e}")
+
     results = []
     for i, (runner, config) in enumerate(zip(model_runners, model_configs), 1):
         logger.info(f"Evaluating model {i}/{len(model_runners)}: {config.model_id}")
-        result = await evaluate_model_on_dataset(runner, tasks, config)
+        result = await evaluate_model_on_dataset(runner, tasks, config, model_progress_callback)
         results.append(result)
+        completed_tasks = i * len(tasks)
 
     logger.info(f"Comparison complete for {len(model_runners)} models")
     return results

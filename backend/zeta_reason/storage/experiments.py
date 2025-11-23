@@ -96,8 +96,11 @@ class ExperimentStorage:
 
     def _write_metadata(self, metadata_list: List[ExperimentMetadata]) -> None:
         """Write metadata index to disk."""
-        with open(self.metadata_file, "w") as f:
+        tmp_path = self.metadata_file.with_suffix(self.metadata_file.suffix + ".tmp")
+        with open(tmp_path, "w") as f:
             json.dump([m.model_dump() for m in metadata_list], f, indent=2)
+        # Atomic replace to avoid partial writes/corruption under concurrent requests
+        os.replace(tmp_path, self.metadata_file)
 
     def _get_experiment_path(self, experiment_id: str) -> Path:
         """Get file path for experiment data."""

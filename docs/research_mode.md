@@ -666,4 +666,4 @@ Esc         Clear filters
 ---
 
 **Last Updated:** January 2025
-**Version:** 1.0.0-beta
+**Version:** 1.0.0

@@ -54,8 +54,8 @@ class OpenAIModelRunner(BaseModelRunner):
                 "variable or pass api_key parameter."
             )
 
-        # Initialize OpenAI client
-        self.client = OpenAI(api_key=self.api_key)
+        # Initialize OpenAI client with a sane timeout to avoid hanging requests
+        self.client = OpenAI(api_key=self.api_key, timeout=30.0)
 
         logger.info(f"Initialized OpenAIModelRunner with model: {model_id}")
 

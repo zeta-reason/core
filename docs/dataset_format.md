@@ -560,5 +560,5 @@ def split_dataset(
 
 ---
 
-**Last Updated:** January 2025
-**Version:** 1.0.0-beta
+**Last Updated:** November 2025
+**Version:** 1.0.0

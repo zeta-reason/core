@@ -1,0 +1,314 @@
+/* Compare Page Styles */
+
+.compare {
+  padding: 32px;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+.backButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.backButton:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 24px;
+}
+
+/* Selection Panel */
+.selectionPanel {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 20px;
+  height: fit-content;
+  position: sticky;
+  top: 20px;
+}
+
+.sectionTitle {
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 16px 0;
+}
+
+.experimentList {
+  max-height: 500px;
+  overflow-y: auto;
+  margin-bottom: 16px;
+}
+
+.experimentItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  margin-bottom: 8px;
+  border: 2px solid transparent;
+}
+
+.experimentItem:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.experimentItem.selected {
+  background-color: var(--bg-tertiary);
+  border-color: var(--accent-primary);
+}
+
+.checkbox {
+  margin-top: 2px;
+  cursor: pointer;
+}
+
+.experimentInfo {
+  flex: 1;
+}
+
+.experimentName {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 4px;
+}
+
+.experimentMeta {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.compareButton {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background-color: var(--accent-primary);
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.compareButton:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.compareButton:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Comparison Panel */
+.comparisonPanel {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  padding: 24px;
+}
+
+.comparisonHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.exportButton {
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.exportButton:hover {
+  border-color: var(--accent-primary);
+  background-color: var(--bg-tertiary);
+}
+
+/* Comparison Table */
+.tableContainer {
+  overflow-x: auto;
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.comparisonTable {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.comparisonTable thead {
+  background-color: var(--bg-tertiary);
+}
+
+.comparisonTable th {
+  padding: 16px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--text-primary);
+  border-bottom: 2px solid var(--border-color);
+}
+
+.comparisonTable th:first-child {
+  width: 200px;
+}
+
+.columnHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.columnTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.columnSubtitle {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+}
+
+.comparisonTable td {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.comparisonTable tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.comparisonTable tbody tr:hover {
+  background-color: var(--bg-tertiary);
+}
+
+.metricLabel {
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.highlightRow {
+  background-color: rgba(59, 130, 246, 0.05);
+}
+
+.highlightRow:hover {
+  background-color: rgba(59, 130, 246, 0.1) !important;
+}
+
+.accuracyCell {
+  font-weight: 700;
+  color: var(--accent-primary);
+}
+
+/* Loading */
+.loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+  gap: 16px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--bg-tertiary);
+  border-top-color: var(--accent-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.loading p {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+
+  .selectionPanel {
+    position: static;
+  }
+}
+
+@media (max-width: 768px) {
+  .compare {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .header {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .tableContainer {
+    font-size: 12px;
+  }
+
+  .comparisonTable th,
+  .comparisonTable td {
+    padding: 8px;
+  }
+}

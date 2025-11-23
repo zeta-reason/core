@@ -48,7 +48,23 @@
 body {
   background-color: var(--bg-primary);
   color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* New Layout Styles */
+.app-container {
+  display: flex;
+  min-height: 100vh;
+}
+
+.main-container {
+  flex: 1;
+  overflow-y: auto;
+  background-color: var(--bg-primary);
   transition: background-color 0.3s ease, color 0.3s ease;
+  /* Account for fixed sidebar so content doesn't sit underneath */
+  margin-left: 220px;
 }
 
 .app {
@@ -150,6 +166,10 @@ code {
 
 /* Responsive design */
 @media (max-width: 768px) {
+  .main-container {
+    margin-left: 60px;
+  }
+
   .app {
     padding: 10px;
   }

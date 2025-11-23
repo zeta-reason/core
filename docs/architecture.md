@@ -95,7 +95,7 @@ from fastapi.middleware.cors import CORSMiddleware
 app = FastAPI(
     title="Zeta Reason API",
     description="Chain-of-thought reasoning benchmarking for LLMs",
-    version="1.0.0-beta"
+    version="1.0.0"
 )
 
 # CORS configuration for frontend
@@ -222,12 +222,19 @@ class OpenAIModelRunner(ModelRunner):
 ```
 
 **Currently Supported:**
-- OpenAI (GPT-4, GPT-3.5-turbo)
+- OpenAI (GPT-4 family)
+- DeepSeek (Chat, Reasoner)
+- Qwen (Alibaba)
+- GLM (ZhipuAI)
 - Dummy (synthetic responses for testing)
 
-**Planned:**
+**Not yet implemented (stubs; will return errors until shipped):**
 - Anthropic (Claude)
-- Cohere
+- Google Gemini
+- Cohere (Command R/R+)
+- Grok (xAI)
+
+**Planned:**
 - HuggingFace models
 
 #### 5. Storage Layer (`storage/`)
@@ -266,6 +273,53 @@ experiments/
 ├── {uuid-2}.json
 └── ...
 ```
+
+#### 6. Progress Tracking (`progress.py`)
+
+Real-time progress updates for long-running evaluations via WebSocket:
+
+```python
+class ProgressTracker:
+    """Manages progress tracking for evaluation runs."""
+
+    def create_run(self, total_tasks: int) -> str:
+        """Create a new run, returns run_id."""
+        run_id = str(uuid.uuid4())
+        self._progress_state[run_id] = ProgressUpdate(
+            run_id=run_id,
+            completed_tasks=0,
+            total_tasks=total_tasks,
+            percentage=0.0,
+            status="running"
+        )
+        return run_id
+
+    async def update_progress(self, run_id: str, completed_tasks: int):
+        """Update progress and broadcast to WebSocket clients."""
+        # Update state
+        # Broadcast to all connected WebSockets
+
+    def get_progress_callback(self, run_id: str) -> Callable:
+        """Get callback for pipeline integration."""
+        # Returns callback that can be called from evaluation pipeline
+```
+
+**WebSocket Endpoint:**
+```
+ws://localhost:8000/ws/progress?run_id={run_id}
+```
+
+**Polling Fallback:**
+```
+GET /api/progress/{run_id}
+```
+
+**Features:**
+- WebSocket-based real-time updates
+- Automatic fallback to HTTP polling for unsupported clients
+- Progress state includes: completed_tasks, total_tasks, percentage, status
+- Supports multiple concurrent evaluation runs
+- Automatic cleanup after 60 seconds
 
 ### Error Handling
 
@@ -796,4 +850,4 @@ See [Roadmap](roadmap.md) for planned features:
 ---
 
 **Last Updated:** January 2025
-**Version:** 1.0.0-beta
+**Version:** 1.0.0

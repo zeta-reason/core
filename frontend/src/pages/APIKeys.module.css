@@ -1,0 +1,322 @@
+/* API Keys Page Styles */
+
+.container {
+  padding: 32px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 32px;
+}
+
+.title {
+  font-size: 32px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0 0 8px 0;
+}
+
+.subtitle {
+  font-size: 15px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Info Box */
+.infoBox {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background-color: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  border-radius: 8px;
+  margin-bottom: 32px;
+}
+
+.infoIcon {
+  font-size: 24px;
+  flex-shrink: 0;
+}
+
+.infoTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 4px 0;
+}
+
+.infoText {
+  font-size: 13px;
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Provider List */
+.providerList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 32px;
+}
+
+.providerCard {
+  padding: 20px;
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.providerCard:hover {
+  border-color: var(--accent-primary);
+}
+
+.providerHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.providerInfo {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.providerName {
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-success);
+  background-color: rgba(40, 167, 69, 0.1);
+  padding: 4px 10px;
+  border-radius: 12px;
+}
+
+/* Buttons */
+.editButton {
+  padding: 8px 16px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--accent-primary);
+  background-color: transparent;
+  border: 1px solid var(--accent-primary);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.editButton:hover {
+  background-color: var(--accent-primary);
+  color: white;
+}
+
+/* Edit Form */
+.editForm {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.keyInput {
+  width: 100%;
+  padding: 12px;
+  font-size: 14px;
+  font-family: monospace;
+  color: var(--text-primary);
+  background-color: var(--bg-primary);
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  transition: border-color 0.15s ease;
+}
+
+.keyInput:focus {
+  outline: none;
+  border-color: var(--accent-primary);
+}
+
+.editActions {
+  display: flex;
+  gap: 8px;
+}
+
+.saveButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: white;
+  background-color: var(--accent-primary);
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.saveButton:hover {
+  opacity: 0.9;
+}
+
+.cancelButton {
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.cancelButton:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+/* Key Display */
+.keyDisplay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background-color: var(--bg-tertiary);
+  border-radius: 6px;
+}
+
+.keyValue {
+  flex: 1;
+  font-size: 14px;
+  font-family: monospace;
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.toggleButton {
+  padding: 6px 12px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  flex-shrink: 0;
+}
+
+.toggleButton:hover {
+  border-color: var(--text-primary);
+  color: var(--text-primary);
+}
+
+.noKey {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+/* Save Success */
+.saveSuccess {
+  margin-top: 12px;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-success);
+  background-color: rgba(40, 167, 69, 0.1);
+  border-radius: 6px;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Footer */
+.footer {
+  padding: 20px;
+  background-color: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.footerTitle {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 0 0 12px 0;
+}
+
+.linkList {
+  margin: 0;
+  padding-left: 20px;
+  list-style: none;
+}
+
+.linkList li {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+  position: relative;
+}
+
+.linkList li::before {
+  content: '→';
+  position: absolute;
+  left: -20px;
+  color: var(--accent-primary);
+}
+
+.linkList a {
+  color: var(--accent-primary);
+  text-decoration: none;
+  transition: opacity 0.15s ease;
+}
+
+.linkList a:hover {
+  opacity: 0.8;
+  text-decoration: underline;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .container {
+    padding: 16px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .providerHeader {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .keyDisplay {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .keyValue {
+    white-space: normal;
+    word-break: break-all;
+  }
+}

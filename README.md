@@ -2,7 +2,7 @@
 
 > Chain-of-Thought Reasoning Benchmarking for Large Language Models
 
-[![Version](https://img.shields.io/badge/version-1.0.0--beta-blue.svg)](https://github.com/yourusername/zeta-reason)
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/yourusername/zeta-reason)
 [![Python](https://img.shields.io/badge/python-3.11+-blue.svg)](https://www.python.org/downloads/)
 [![TypeScript](https://img.shields.io/badge/typescript-5.0+-blue.svg)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
@@ -26,9 +26,13 @@ Zeta Reason is a comprehensive benchmarking platform for evaluating chain-of-tho
 - **Research Mode** - Detailed per-task analysis for deep investigation
 
 ### Model Support
-- **OpenAI** - GPT-4, GPT-3.5-turbo, and other models
-- **Dummy Provider** - Fast testing with synthetic responses
-- **Extensible** - Easy to add new providers (Anthropic, Cohere, etc.)
+- **OpenAI** - GPT-4, GPT-3.5-turbo, and other models ✅
+- **DeepSeek** - Chat, Reasoner ✅
+- **Qwen** - Plus, Max, Turbo ✅
+- **GLM** - GLM-4, GLM-4-Plus ✅
+- **Dummy Provider** - Fast testing with synthetic responses ✅
+- **Not yet implemented (will return errors until shipped)**: Anthropic (Claude), Google (Gemini), Cohere (Command), Grok (xAI)
+- **Extensible** - Easy to add new providers
 
 ## 🚀 Quick Start
 

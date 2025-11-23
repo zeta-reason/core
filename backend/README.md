@@ -1,6 +1,6 @@
 # Zeta Reason Backend
 
-Backend API for Zeta Reason v0.1 - Chain-of-thought reasoning benchmarking for LLMs.
+Backend API for Zeta Reason v1.0.0 (November 2025) - Chain-of-thought reasoning benchmarking for LLMs.
 
 ## Quick Start
 
@@ -28,7 +28,7 @@ uvicorn zeta_reason.main:app --reload
 
 ```bash
 curl http://localhost:8000/health
-# Expected: {"status":"ok","version":"0.1.0"}
+# Expected: {"status":"ok","version":"1.0.0"}
 ```
 
 ### 4. Run Example Evaluation
@@ -52,7 +52,7 @@ Health check endpoint.
 ```json
 {
   "status": "ok",
-  "version": "0.1.0"
+  "version": "1.0.0"
 }
 ```
 
@@ -76,7 +76,8 @@ Evaluate a single model on a dataset.
       "input": "What is 2 + 2?",
       "target": "4"
     }
-  ]
+  ],
+  "run_id": "optional-client-generated-id"
 }
 ```
 
@@ -237,6 +238,17 @@ Uses OpenAI's chat completions API (GPT-4, GPT-4o, GPT-4o-mini, etc.).
 **Requirements:**
 - Set `OPENAI_API_KEY` environment variable or pass `api_key` parameter
 - Supports all OpenAI chat models
+
+### Other Providers
+Zeta Reason also supports:
+- **DeepSeek** (`deepseek`)
+- **Qwen** (`qwen`)
+- **GLM** (`glm`)
+- **Grok** (`grok`)
+- **Cohere** (`cohere`)
+- **Google Gemini** (`google`)
+
+See `zeta_reason/providers/` for implementation details and required environment variables.
 
 **System Prompt:**
 ```

@@ -36,6 +36,9 @@ class ModelConfig(BaseModel):
         default=1,
         description="Number of samples per task (for self-consistency). Currently fixed at 1 for v1.0.",
     )
+    api_key: Optional[str] = Field(
+        default=None, description="API key for the provider (optional, falls back to environment variable)"
+    )
 
 
 # ============================================================================
@@ -47,12 +50,24 @@ class ModelOutput(BaseModel):
     """Output from a single model inference."""
 
     answer: str = Field(..., description="Final extracted answer")
-    cot_text: str = Field(..., description="Full chain-of-thought reasoning text")
+    cot_text: Optional[str] = Field(
+        default=None,
+        description="Full chain-of-thought reasoning text (may be absent if CoT disabled)",
+    )
     confidence: Optional[float] = Field(
         default=None, description="Model's confidence score (0-1) if available"
     )
     raw_response: Optional[str] = Field(
         default=None, description="Raw response from the model API"
+    )
+    prompt_tokens: Optional[int] = Field(
+        default=None, description="Prompt token count from provider usage if available"
+    )
+    completion_tokens: Optional[int] = Field(
+        default=None, description="Completion token count from provider usage if available"
+    )
+    total_tokens: Optional[int] = Field(
+        default=None, description="Total token count from provider usage if available"
     )
 
 
@@ -111,6 +126,26 @@ class MetricsSummary(BaseModel):
     latency_mean_ms: Optional[float] = Field(default=None, description="Mean latency (ms) per task")
     latency_p95_ms: Optional[float] = Field(default=None, description="95th percentile latency (ms) per task")
 
+    @property
+    def brier_score(self) -> Optional[float]:
+        """Alias for backward compatibility."""
+        return self.brier
+
+    @property
+    def self_consistency_entropy(self) -> Optional[float]:
+        """Alias for backward compatibility."""
+        return self.sce
+
+    @property
+    def expected_calibration_error(self) -> Optional[float]:
+        """Alias for backward compatibility."""
+        return self.ece
+
+    @property
+    def unsupported_step_rate(self) -> Optional[float]:
+        """Alias for backward compatibility."""
+        return self.usr
+
 
 class EvaluationResult(BaseModel):
     """Complete evaluation result for a single model."""
@@ -133,12 +168,14 @@ class EvaluateRequest(BaseModel):
 
     model_configuration: ModelConfig = Field(..., description="Model configuration")
     tasks: list[Task] = Field(..., description="List of tasks to evaluate")
+    run_id: Optional[str] = Field(default=None, description="Optional client-supplied run ID for progress tracking")
 
 
 class EvaluateResponse(BaseModel):
     """Response from single model evaluation."""
 
     result: EvaluationResult = Field(..., description="Evaluation result")
+    run_id: Optional[str] = Field(default=None, description="Progress tracking run ID (if progress tracking enabled)")
 
 
 class CompareRequest(BaseModel):
@@ -148,6 +185,7 @@ class CompareRequest(BaseModel):
         ..., description="List of model configurations to compare"
     )
     tasks: list[Task] = Field(..., description="List of tasks to evaluate")
+    run_id: Optional[str] = Field(default=None, description="Optional client-supplied run ID for progress tracking")
 
 
 class CompareResponse(BaseModel):
@@ -156,6 +194,7 @@ class CompareResponse(BaseModel):
     results: list[EvaluationResult] = Field(
         ..., description="Evaluation results for each model"
     )
+    run_id: Optional[str] = Field(default=None, description="Progress tracking run ID (if progress tracking enabled)")
 
 
 class HealthResponse(BaseModel):

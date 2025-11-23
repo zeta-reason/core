@@ -3,7 +3,12 @@
  */
 
 import type { EvaluationResult, ModelConfig } from './api';
-import type { SamplingConfig } from '../components/DatasetUpload';
+
+// Backend expects snake_case for SamplingConfig
+export interface BackendSamplingConfig {
+  mode: string;
+  sample_size: number;
+}
 
 // ============================================================================
 // Experiment Metadata
@@ -29,7 +34,7 @@ export interface ExperimentMetadata {
 export interface ExperimentData {
   metadata: ExperimentMetadata;
   results: EvaluationResult[];
-  sampling_config: SamplingConfig;
+  sampling_config: BackendSamplingConfig;
 }
 
 // ============================================================================
@@ -41,8 +46,8 @@ export interface ExperimentSaveRequest {
   dataset_name: string;
   dataset_size: number;
   results: EvaluationResult[];
-  sampling_config: SamplingConfig;
-  tags?: string[];
+  sampling_config: BackendSamplingConfig;
+  tags: string[];
 }
 
 export interface ExperimentSaveResponse {

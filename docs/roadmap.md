@@ -5,10 +5,10 @@ This document outlines the planned features and enhancements for Zeta Reason acr
 ## Table of Contents
 
 - [Version History](#version-history)
-- [v1.0.0-beta (Current)](#v100-beta-current)
-- [v1.1.0 (Q1 2025)](#v110-q1-2025)
-- [v1.2.0 (Q2 2025)](#v120-q2-2025)
-- [v2.0.0 (Q3 2025)](#v200-q3-2025)
+- [v1.0.0 (Current)](#v100-current)
+- [v1.1.0 (Q1 2026)](#v110-q1-2026)
+- [v1.2.0 (Q3 2026)](#v120-q3-2026)
+- [v2.0.0 (Q1 2027)](#v200-q1-2027)
 - [Future Considerations](#future-considerations)
 - [Community Requests](#community-requests)
 
@@ -16,16 +16,16 @@ This document outlines the planned features and enhancements for Zeta Reason acr
 
 | Version | Release Date | Status | Highlights |
 |---------|--------------|--------|------------|
-| v1.0.0-beta | Jan 2025 | **Current** | Core evaluation, experiment history, dark mode |
-| v1.1.0 | Q1 2025 | Planned | Anthropic support, advanced filtering, LaTeX export |
-| v1.2.0 | Q2 2025 | Planned | Database migration, Docker, performance optimizations |
-| v2.0.0 | Q3 2025 | Future | Multi-turn eval, auto-tuning, collaboration features |
+| v1.0.0 | Nov 2025 | **Current** | Core evaluation, experiment history, dark mode |
+| v1.1.0 | Q1 2026 | Planned | Anthropic support, advanced filtering, LaTeX export |
+| v1.2.0 | Q3 2026 | Planned | Database migration, Docker, performance optimizations |
+| v2.0.0 | Q1 2027 | Future | Multi-turn eval, auto-tuning, collaboration features |
 
 ---
 
-## v1.0.0-beta (Current)
+## v1.0.0 (Current)
 
-**Release Date:** January 2025
+**Release Date:** November 2025
 **Status:** ✅ Released
 
 ### Features Delivered
@@ -47,6 +47,12 @@ This document outlines the planned features and enhancements for Zeta Reason acr
 
 #### Model Providers
 - ✅ OpenAI (GPT-4, GPT-3.5-turbo, etc.)
+- ✅ DeepSeek (Chat, Reasoner)
+- ✅ Qwen (Alibaba)
+- ✅ GLM (ZhipuAI)
+- ✅ Grok (xAI)
+- ✅ Cohere
+- ✅ Google Gemini
 - ✅ Dummy provider (testing)
 
 #### User Interface
@@ -72,59 +78,21 @@ This document outlines the planned features and enhancements for Zeta Reason acr
 
 #### Developer Experience
 - ✅ FastAPI backend with OpenAPI docs
-- ✅ React + TypeScript frontend
+- ✅ React 19 + TypeScript frontend
 - ✅ Comprehensive type safety
 - ✅ Error handling and validation
 - ✅ Development tooling (Ruff, ESLint)
 
 ---
 
-## v1.1.0 (Q1 2025)
+## v1.1.0 (Q1 2027)
 
-**Target Release:** March 2025
+**Target Release:** March 2027
 **Theme:** Provider Expansion & Enhanced Analysis
 
 ### Planned Features
 
-#### 1. Anthropic (Claude) Support
-**Priority:** High
-**Effort:** Medium
-
-Add support for Claude models:
-
-```python
-class AnthropicModelRunner(ModelRunner):
-    """Anthropic Claude integration."""
-
-    def __init__(self, model_id: str, ...):
-        self.client = anthropic.Anthropic(
-            api_key=os.getenv("ANTHROPIC_API_KEY")
-        )
-        self.model_id = model_id  # claude-3-opus, claude-3-sonnet
-
-    async def run(self, prompt: str) -> ModelOutput:
-        response = await self.client.messages.create(
-            model=self.model_id,
-            messages=[{"role": "user", "content": prompt}],
-            ...
-        )
-        return self._parse_response(response)
-```
-
-**Models to support:**
-- Claude 3 Opus
-- Claude 3 Sonnet
-- Claude 3 Haiku
-- Claude 2.1
-
-**Tasks:**
-- [ ] Implement AnthropicModelRunner
-- [ ] Add API key configuration
-- [ ] Update frontend model selector
-- [ ] Add Claude-specific prompting best practices
-- [ ] Test with benchmark datasets
-
-#### 2. Advanced Filtering in Research Mode
+#### 1. Advanced Filtering in Research Mode
 **Priority:** High
 **Effort:** Small
 
@@ -159,7 +127,7 @@ interface FilterState {
 - [ ] Add filter presets ("High Confidence Errors", etc.)
 - [ ] Persist filter state
 
-#### 3. LaTeX Export
+#### 2. LaTeX Export
 **Priority:** Medium
 **Effort:** Small
 
@@ -196,7 +164,7 @@ ${r.metrics.usr.toFixed(3)} \\\\
 - [ ] Support multiple table formats
 - [ ] Add customization options (caption, label, etc.)
 
-#### 4. CSV Export Enhancement
+#### 3. CSV Export Enhancement
 **Priority:** Low
 **Effort:** Small
 
@@ -213,7 +181,7 @@ Improve CSV export with more options:
 - [ ] Add export configuration modal
 - [ ] Support both task-level and summary exports
 
-#### 5. Custom Metric Plugins
+#### 4. Custom Metric Plugins
 **Priority:** Medium
 **Effort:** Large
 
@@ -249,9 +217,9 @@ register_metric("custom_f1", CustomF1Score())
 
 ---
 
-## v1.2.0 (Q2 2025)
+## v1.2.0 (Q2 2027)
 
-**Target Release:** June 2025
+**Target Release:** June 2027
 **Theme:** Performance & Deployment
 
 ### Planned Features
@@ -392,9 +360,9 @@ Improve performance for large evaluations:
 
 ---
 
-## v2.0.0 (Q3 2025)
+## v2.0.0 (Q3 2027)
 
-**Target Release:** September 2025
+**Target Release:** September 2027
 **Theme:** Advanced Features & Collaboration
 
 ### Planned Features
@@ -562,13 +530,13 @@ Connect with Weights & Biases, MLflow, etc.
 
 We track community feature requests in GitHub Issues. Vote on features you'd like to see!
 
-### Top Requested Features (as of Jan 2025)
+### Top Requested Features (as of Nov 2026)
 
-1. **Anthropic Claude Support** - Scheduled for v1.1.0
-2. **Docker Setup** - Scheduled for v1.2.0
-3. **Cost Tracking** - Scheduled for v1.2.0
-4. **Multi-Turn Evaluation** - Scheduled for v2.0.0
-5. **Cohere Support** - Under consideration
+1.  **Anthropic Claude Support** - Scheduled for v1.1.0
+2.  **Docker Setup** - Scheduled for v1.2.0
+3.  **Cost Tracking** - Scheduled for v1.2.0
+4.  **Multi-Turn Evaluation** - Scheduled for v2.0.0
+5.  **Cohere Support** - Under consideration
 
 ### How to Request Features
 
@@ -628,7 +596,7 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) for details.
 
 ---
 
-**Last Updated:** January 2025
-**Version:** 1.0.0-beta
+**Last Updated:** November 2026
+**Version:** 1.0.0
 
 *This roadmap is a living document and may change based on user feedback and priorities.*

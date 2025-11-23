@@ -108,7 +108,7 @@ npm run lint
 
 ## Technologies
 
-- **React 18** - UI framework
+- **React 19** - UI framework
 - **TypeScript** - Type safety
 - **Vite** - Build tool and dev server
 - **Native fetch** - HTTP client (no external dependencies)

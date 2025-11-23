@@ -23,6 +23,7 @@ export interface ModelConfig {
   max_tokens: number;
   use_cot: boolean;
   shots: number; // Number of samples per task (for self-consistency). Fixed at 1 for v1.0.
+  api_key?: string; // Optional API key (falls back to backend environment variable)
 }
 
 // ============================================================================
@@ -96,19 +97,23 @@ export interface EvaluationResult {
 export interface EvaluateRequest {
   model_configuration: ModelConfig;
   tasks: Task[];
+  run_id?: string;
 }
 
 export interface EvaluateResponse {
   result: EvaluationResult;
+  run_id?: string | null;
 }
 
 export interface CompareRequest {
   model_configurations: ModelConfig[];
   tasks: Task[];
+  run_id?: string;
 }
 
 export interface CompareResponse {
   results: EvaluationResult[];
+  run_id?: string | null;
 }
 
 // ============================================================================

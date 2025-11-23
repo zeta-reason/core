@@ -15,6 +15,7 @@ This document provides detailed specifications for all metrics computed by Zeta 
   - [CoT Tokens](#cot-tokens)
   - [Step Count](#step-count)
   - [Latency](#latency)
+  - [Token Usage](#token-usage)
 - [Aggregation](#aggregation)
 - [Implementation Details](#implementation-details)
 
@@ -501,6 +502,27 @@ async def run_with_timing(self, prompt: str) -> ModelOutput:
 
 ---
 
+### Token Usage
+
+**Definition:** Token counts reported by the provider for each request.
+
+**Per-task fields:**
+- `prompt_tokens`
+- `completion_tokens`
+- `total_tokens`
+
+**Aggregates:**
+- `prompt_tokens_mean`
+- `completion_tokens_mean`
+- `total_tokens_mean`
+
+**Interpretation:**
+- Useful for cost estimation and efficiency benchmarking
+- Compare reasoning vs non-reasoning runs to gauge overhead
+- Track alongside latency to find cost-performance sweet spots
+
+---
+
 ## Aggregation
 
 ### Per-Task Metrics
@@ -646,5 +668,5 @@ def safe_compute_metric(
 
 ---
 
-**Last Updated:** January 2025
-**Version:** 1.0.0-beta
+**Last Updated:** November 2025
+**Version:** 1.0.0
