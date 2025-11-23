@@ -286,10 +286,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📧 Contact
 
-- **Issues**: [GitHub Issues](https://github.com/yourusername/zeta-reason/issues)
-- **Discussions**: [GitHub Discussions](https://github.com/yourusername/zeta-reason/discussions)
-- **Email**: your.email@example.com
+- **Issues**: [GitHub Issues](https://github.com/zeta-reason/core/issues)
+- **Discussions**: [GitHub Discussions](https://github.com/zeta-reason/core/discussions)
+- **Email**: a4santho@uwaterloo.ca
 
 ---
 
-**Built with ❤️ for LLM researchers and developers**
+**Built with ❤️ in Waterloo/Toronto for LLM researchers and developers**
